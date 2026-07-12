@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://einburgerungstest.sarmatt.online/sitemap.xml

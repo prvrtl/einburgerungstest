@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.pytest_cache/
+data/stats.json
+data/stats.tmp
+data/push.json
+data/vapid.pem
+.env.local
+.DS_Store

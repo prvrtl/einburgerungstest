@@ -1,0 +1,22 @@
+services:
+  app:
+    image: ${IMAGES_PREFIX:-}ebt-app
+    restart: unless-stopped
+    env_file:
+      - path: .env.local
+        required: false
+    volumes:
+      - stats:/stats
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8300/healthz', timeout=2)"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+volumes:
+  stats:

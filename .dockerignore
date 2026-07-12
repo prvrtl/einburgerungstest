@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+.git/
+.github/
+.gitignore
+tests/
+data/stats.json
+data/stats.tmp
+compose*.yaml
+deploy.sh
+README.md
+requirements-dev.txt
+.env.local
+.env.local.dist
+.DS_Store

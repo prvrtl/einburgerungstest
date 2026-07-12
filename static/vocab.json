@@ -1,0 +1,307 @@
+[
+ {
+  "de": "Regierung",
+  "en": "government",
+  "uk": "уряд"
+ },
+ {
+  "de": "Bundesregierung",
+  "en": "federal government",
+  "uk": "федеральний уряд"
+ },
+ {
+  "de": "Staat",
+  "en": "state",
+  "uk": "держава"
+ },
+ {
+  "de": "Verfassung",
+  "en": "constitution",
+  "uk": "конституція"
+ },
+ {
+  "de": "Grundgesetz",
+  "en": "basic law",
+  "uk": "Основний закон"
+ },
+ {
+  "de": "Gewalt",
+  "en": "power / authority",
+  "uk": "влада (гілка влади)"
+ },
+ {
+  "de": "Macht",
+  "en": "power",
+  "uk": "влада"
+ },
+ {
+  "de": "Staatsoberhaupt",
+  "en": "head of state",
+  "uk": "глава держави"
+ },
+ {
+  "de": "das Oberhaupt",
+  "en": "head / leader",
+  "uk": "глава"
+ },
+ {
+  "de": "die Abgeordneten",
+  "en": "members of parliament",
+  "uk": "депутати"
+ },
+ {
+  "de": "Abgeordnete",
+  "en": "member of parliament",
+  "uk": "депутат/депутатка"
+ },
+ {
+  "de": "Wahlhelferinnen",
+  "en": "election assistants",
+  "uk": "працівниці виборчої дільниці"
+ },
+ {
+  "de": "Mitglied",
+  "en": "member",
+  "uk": "член"
+ },
+ {
+  "de": "Mitglieder",
+  "en": "members",
+  "uk": "члени"
+ },
+ {
+  "de": "Mehrheit",
+  "en": "majority",
+  "uk": "більшість"
+ },
+ {
+  "de": "beachten",
+  "en": "to consider / to observe",
+  "uk": "дотримуватися"
+ },
+ {
+  "de": "Recht",
+  "en": "law",
+  "uk": "право"
+ },
+ {
+  "de": "Die Gerichte",
+  "en": "the courts",
+  "uk": "суди"
+ },
+ {
+  "de": "Gesetz",
+  "en": "law / act",
+  "uk": "закон"
+ },
+ {
+  "de": "Straftat",
+  "en": "criminal offense",
+  "uk": "злочин"
+ },
+ {
+  "de": "Schöffin",
+  "en": "lay judge (female)",
+  "uk": "народна засідателька"
+ },
+ {
+  "de": "Rechtsanwalt",
+  "en": "lawyer",
+  "uk": "адвокат"
+ },
+ {
+  "de": "Richters",
+  "en": "judges",
+  "uk": "судді (род. відм.)"
+ },
+ {
+  "de": "verfassungswidrig",
+  "en": "unconstitutional",
+  "uk": "неконституційний"
+ },
+ {
+  "de": "Widerspruch",
+  "en": "objection",
+  "uk": "заперечення, оскарження"
+ },
+ {
+  "de": "Behörde",
+  "en": "authority / agency",
+  "uk": "установа, відомство"
+ },
+ {
+  "de": "die Verwaltung",
+  "en": "administration",
+  "uk": "адміністрація, управління"
+ },
+ {
+  "de": "Gemeindeverwaltung",
+  "en": "municipal administration",
+  "uk": "адміністрація громади"
+ },
+ {
+  "de": "Gemeinde",
+  "en": "municipality",
+  "uk": "громада"
+ },
+ {
+  "de": "Bürgermeister",
+  "en": "mayor",
+  "uk": "мер, бургомістр"
+ },
+ {
+  "de": "Ansprechpartnerin",
+  "en": "contact person (female)",
+  "uk": "контактна особа"
+ },
+ {
+  "de": "Vertreter",
+  "en": "representative",
+  "uk": "представник"
+ },
+ {
+  "de": "Landkreis",
+  "en": "district / county",
+  "uk": "район, округ"
+ },
+ {
+  "de": "Grundrechte",
+  "en": "fundamental rights",
+  "uk": "основні права"
+ },
+ {
+  "de": "Gewissensfreiheit",
+  "en": "freedom of conscience",
+  "uk": "свобода совісті"
+ },
+ {
+  "de": "Freizügigkeit",
+  "en": "freedom of movement",
+  "uk": "свобода пересування"
+ },
+ {
+  "de": "eingeschränkt",
+  "en": "restricted",
+  "uk": "обмежений"
+ },
+ {
+  "de": "Wirtschaft",
+  "en": "economy",
+  "uk": "економіка"
+ },
+ {
+  "de": "Zwangsarbeit",
+  "en": "forced labor",
+  "uk": "примусова праця"
+ },
+ {
+  "de": "Erwerbstätigen",
+  "en": "employed persons",
+  "uk": "зайняті, працюючі"
+ },
+ {
+  "de": "Arbeitsverhältnis",
+  "en": "employment relationship",
+  "uk": "трудові відносини"
+ },
+ {
+  "de": "Gewerkschaften",
+  "en": "trade unions",
+  "uk": "профспілки"
+ },
+ {
+  "de": "reklamieren",
+  "en": "to complain / to claim",
+  "uk": "подати скаргу/рекламацію"
+ },
+ {
+  "de": "Pflicht",
+  "en": "duty / obligation",
+  "uk": "обовʼязок"
+ },
+ {
+  "de": "wechseln",
+  "en": "to change",
+  "uk": "змінювати"
+ },
+ {
+  "de": "Gesellschaft",
+  "en": "society",
+  "uk": "суспільство"
+ },
+ {
+  "de": "Kindererziehung",
+  "en": "raising children",
+  "uk": "виховання дітей"
+ },
+ {
+  "de": "Erzeugung",
+  "en": "upbringing / generation",
+  "uk": "виробництво"
+ },
+ {
+  "de": "Ehepaar",
+  "en": "married couple",
+  "uk": "подружжя"
+ },
+ {
+  "de": "Ehe",
+  "en": "marriage",
+  "uk": "шлюб"
+ },
+ {
+  "de": "Scheidung",
+  "en": "divorce",
+  "uk": "розлучення"
+ },
+ {
+  "de": "volljährig",
+  "en": "of age / adult",
+  "uk": "повнолітній"
+ },
+ {
+  "de": "Standesamt",
+  "en": "registry office",
+  "uk": "РАЦС (відділ реєстрації шлюбів)"
+ },
+ {
+  "de": "Brauch",
+  "en": "custom / tradition",
+  "uk": "звичай"
+ },
+ {
+  "de": "schmücken",
+  "en": "to decorate",
+  "uk": "прикрашати"
+ },
+ {
+  "de": "ehrenamtlich",
+  "en": "voluntary",
+  "uk": "на волонтерських засадах"
+ },
+ {
+  "de": "Ehrenamt",
+  "en": "voluntary work",
+  "uk": "волонтерство"
+ },
+ {
+  "de": "Grundsatz",
+  "en": "principle",
+  "uk": "принцип"
+ },
+ {
+  "de": "Merkmal",
+  "en": "feature / characteristic",
+  "uk": "ознака"
+ },
+ {
+  "de": "leugnen",
+  "en": "to deny",
+  "uk": "заперечувати"
+ },
+ {
+  "de": "Pfingsten",
+  "en": "Pentecost",
+  "uk": "Трійця (Пʼятидесятниця)"
+ }
+]

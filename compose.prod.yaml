@@ -1,0 +1,12 @@
+services:
+  app:
+    image: ghcr.io/prvrtl/einburgerungstest:latest
+    pull_policy: always
+    networks:
+      default: {}
+      edge:
+        aliases: [einburgerungstest]
+
+networks:
+  edge:
+    external: true

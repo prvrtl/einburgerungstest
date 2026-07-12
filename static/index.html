@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Einbürgerungstest Trainer</title>
+  <meta name="description" content="Practice quiz for the German Leben in Deutschland / Einbürgerungstest — all 16 federal states, exam simulation, translations and explanations.">
+  <link rel="canonical" href="https://einburgerungstest.sarmatt.online/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Einbürgerungstest Trainer">
+  <meta property="og:description" content="Free practice quiz for the German citizenship test — all 460 official questions, all 16 federal states, realistic exam simulation, EN/UK translations.">
+  <meta property="og:url" content="https://einburgerungstest.sarmatt.online/">
+  <meta property="og:image" content="https://einburgerungstest.sarmatt.online/icons/icon-512.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#e9f5f7">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#06171d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Einbürgerung">
+  <script>try{var _t=localStorage.getItem('theme');if(_t==='light'||_t==='dark')document.documentElement.setAttribute('data-theme',_t)}catch(e){}</script>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="root">
+    <div class="boot">Loading questions&hellip;</div>
+  </div>
+  <script src="/vendor/react.production.min.js"></script>
+  <script src="/vendor/react-dom.production.min.js"></script>
+  <script src="/vendor/htm.min.js"></script>
+  <script src="/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+    }
+  </script>
+</body>
+</html>

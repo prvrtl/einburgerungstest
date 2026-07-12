@@ -1,0 +1,37 @@
+name: Backup stats
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Snapshot stats.json from droplet
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch stats.json over SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ vars.DEPLOY_HOST }}
+          USER: ${{ vars.DEPLOY_USER }}
+          PORT: ${{ vars.DEPLOY_PORT || 22 }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+        run: |
+          install -m 600 /dev/null key
+          printf '%s\n' "$SSH_KEY" > key
+          ssh -i key -p "$PORT" -o StrictHostKeyChecking=accept-new "$USER@$HOST" \
+            "cd '$DEPLOY_PATH' && docker compose -f compose.yaml -f compose.prod.yaml exec -T app cat /stats/stats.json" \
+            > stats.json
+          python3 -m json.tool stats.json > /dev/null
+          echo "Fetched $(wc -c < stats.json) bytes"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stats-${{ github.run_id }}
+          path: stats.json
+          retention-days: 90
