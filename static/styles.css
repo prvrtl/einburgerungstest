@@ -12,6 +12,19 @@
   --green-soft: rgba(52, 199, 89, .12);
   --red: #ff3b30;
   --red-soft: rgba(255, 59, 48, .12);
+  /* Small-text labels on the frosted tab bar (.tab, .subtitle) fail WCAG AA
+     against --muted/--accent in light mode (measured ~3:1 on composited
+     glass, need 4.5:1). Dark mode already passes, so these are dedicated
+     darker values used only by those labels in light mode; the dark blocks
+     below just alias them back to --muted/--accent, unchanged. */
+  --label-muted: #616166;
+  --label-accent: #06748c;
+  /* Opaque equivalents of --fill / --accent-soft composited over --card, for
+     prefers-reduced-transparency: reduce — used only there, to give the
+     tinted-fill surfaces (.opt/.seg/.search/.select/.landbtn and
+     .badge/.expl) a solid background once their blur is stripped. */
+  --fill-opaque: #efeff0;
+  --accent-soft-opaque: #e2f1f4;
   --shadow: 0 1px 3px rgba(0, 0, 0, .08);
   /* --shadow-lg is retained solely for the paper-exam block below, which is
      intentionally off-limits for restyling; nothing else should use it. */
@@ -32,6 +45,22 @@
   --fs-xl: 22px;
   --fs-2xl: 28px;
   --spring: cubic-bezier(.34, 1.45, .64, 1);
+  /* Layout constant for the floating (overlay) tab bar — not theme-dependent,
+     so it lives only here, not duplicated in the dark blocks below. */
+  --tabbar-h: 64px;
+  --tabbar-clear: calc(var(--tabbar-h) + 14px + env(safe-area-inset-bottom));
+  /* Liquid Glass material. Frosted surfaces sit on the ambient gradient field
+     (--ambient) and need a matching set of --glass* tokens defined in BOTH
+     dark blocks below, byte-identical in the property names they cover. */
+  --glass: color-mix(in srgb, var(--card) 74%, transparent);
+  --glass-blur: blur(24px) saturate(180%);
+  --glass-line-top: rgba(255, 255, 255, .6);
+  --glass-line-bottom: rgba(255, 255, 255, .18);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, .10);
+  --ambient:
+    radial-gradient(ellipse 60% 40% at 12% 6%, rgba(10, 137, 167, .14), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 90% 14%, rgba(88, 86, 214, .10), transparent 60%),
+    radial-gradient(ellipse 70% 55% at 50% 100%, rgba(10, 137, 167, .09), transparent 65%);
 }
 /* Dark palette. Applied by system preference (unless overridden to light in
    settings) and by the explicit data-theme="dark" override — keep both blocks
@@ -51,8 +80,21 @@
     --green-soft: rgba(48, 209, 88, .16);
     --red: #ff453a;
     --red-soft: rgba(255, 69, 58, .16);
+    --label-muted: var(--muted);
+    --label-accent: var(--accent);
+    --fill-opaque: #323236;
+    --accent-soft-opaque: #1e383d;
     --shadow: 0 1px 3px rgba(0, 0, 0, .4);
     --shadow-lg: 0 1px 3px rgba(0, 0, 0, .4), 0 16px 40px rgba(0, 0, 0, .55);
+    --glass: color-mix(in srgb, var(--card) 62%, transparent);
+    --glass-blur: blur(24px) saturate(180%);
+    --glass-line-top: rgba(255, 255, 255, .14);
+    --glass-line-bottom: rgba(255, 255, 255, .05);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, .45);
+    --ambient:
+      radial-gradient(ellipse 60% 40% at 12% 6%, rgba(39, 200, 224, .20), transparent 60%),
+      radial-gradient(ellipse 55% 45% at 90% 14%, rgba(94, 92, 230, .16), transparent 60%),
+      radial-gradient(ellipse 70% 55% at 50% 100%, rgba(39, 200, 224, .12), transparent 65%);
   }
 }
 :root[data-theme="dark"] {
@@ -69,8 +111,21 @@
   --green-soft: rgba(48, 209, 88, .16);
   --red: #ff453a;
   --red-soft: rgba(255, 69, 58, .16);
+  --label-muted: var(--muted);
+  --label-accent: var(--accent);
+  --fill-opaque: #323236;
+  --accent-soft-opaque: #1e383d;
   --shadow: 0 1px 3px rgba(0, 0, 0, .4);
   --shadow-lg: 0 1px 3px rgba(0, 0, 0, .4), 0 16px 40px rgba(0, 0, 0, .55);
+  --glass: color-mix(in srgb, var(--card) 62%, transparent);
+  --glass-blur: blur(24px) saturate(180%);
+  --glass-line-top: rgba(255, 255, 255, .14);
+  --glass-line-bottom: rgba(255, 255, 255, .05);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, .45);
+  --ambient:
+    radial-gradient(ellipse 60% 40% at 12% 6%, rgba(39, 200, 224, .20), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 90% 14%, rgba(94, 92, 230, .16), transparent 60%),
+    radial-gradient(ellipse 70% 55% at 50% 100%, rgba(39, 200, 224, .12), transparent 65%);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -86,6 +141,17 @@ body {
   transition: background-color .35s, color .35s;
 }
 #root { height: 100%; }
+/* Ambient backdrop: a fixed, subtle tint field behind the whole app — this is
+   what the glass surfaces refract. Flat color alone (--bg) blurs to flat
+   color; this gives the frosted panels something to pick up. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--ambient), var(--bg);
+  pointer-events: none;
+}
 .card, .stat, .opt, .select, .search, .m-row, .seg, .landbtn { transition-property: background-color, color, border-color, box-shadow, transform; transition-duration: .3s; }
 button { font: inherit; color: inherit; }
 .boot { text-align: center; padding: 5rem 1rem; color: var(--muted); }
@@ -93,6 +159,7 @@ button { font: inherit; color: inherit; }
 /* App frame: fixed viewport, content region + bottom tab bar. The page
    itself never scrolls — only designated .scrollpane / .qwrap panes do. */
 .app {
+  position: relative;
   height: 100vh;
   height: 100dvh;
   max-width: 680px;
@@ -109,8 +176,15 @@ button { font: inherit; color: inherit; }
 }
 .screen { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
 .scrollpane { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+/* The tab bar now floats over .content (see .tabbar below) instead of
+   reserving its own flow height, so every internal scroll pane extends full
+   height and needs its own bottom clearance to keep the last item from
+   scrolling into permanent hiding under the bar. The paper-exam pane is
+   excluded: the tab bar is hidden entirely while papering (body.papering
+   .tabbar), and that block is off-limits for restyling. */
+.scrollpane:not(.paper-pane) { padding-bottom: var(--tabbar-clear); }
 .scrollpane .fit { min-height: 100%; display: flex; flex-direction: column; justify-content: center; }
-.scrollpane.stack { display: flex; flex-direction: column; gap: var(--sp-4); padding: var(--sp-1) 2px var(--sp-4); }
+.scrollpane.stack { display: flex; flex-direction: column; gap: var(--sp-4); padding: var(--sp-1) 2px var(--tabbar-clear); }
 .cardpane { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .qcard { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: var(--sp-4) var(--sp-4) var(--sp-2); }
 .qcard .qwrap {
@@ -121,7 +195,7 @@ button { font: inherit; color: inherit; }
 }
 .qcard .done { margin: auto; }
 .qcard .actions { margin-top: var(--sp-3); }
-.actionsbar { display: flex; align-items: center; gap: var(--sp-3); min-height: 54px; }
+.actionsbar { display: flex; align-items: center; gap: var(--sp-3); min-height: 54px; padding-bottom: var(--tabbar-clear); }
 .actionsbar .btn { margin-left: auto; }
 .chips { font-size: var(--fs-sm); font-weight: 600; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .filterrow { display: flex; gap: var(--sp-2); align-items: center; }
@@ -129,34 +203,41 @@ button { font: inherit; color: inherit; }
 .filterrow .select { width: 100%; }
 
 .tabbar {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 25;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 2px;
   padding: 6px var(--sp-2) calc(var(--sp-2) + env(safe-area-inset-bottom));
-  background: color-mix(in srgb, var(--card) 80%, transparent);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px);
-  border-top: .5px solid var(--line);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-top: 0;
+  box-shadow: inset 0 1px 0 var(--glass-line-top), var(--glass-shadow);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .tabbar { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 @supports not (background: color-mix(in srgb, red 50%, transparent)) {
-  .tabbar { background: var(--card); }
+  .tabbar { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 body.papering .tabbar { display: none; }
 .tab {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  border: 0; background: transparent; color: var(--muted);
+  border: 0; background: transparent; color: var(--label-muted);
   padding: 5px 2px 2px; min-height: 48px; border-radius: 0;
   font-size: var(--fs-xs); font-weight: 500; letter-spacing: 0;
   cursor: pointer;
   transition: color .2s;
 }
 .tab svg { width: 25px; height: 25px; }
-.tab.active { color: var(--accent); }
+.tab.active { color: var(--label-accent); }
 
 .brand { display: flex; align-items: center; gap: var(--sp-3); padding: 6px 2px 0; }
 .appicon { width: 42px; height: 42px; border-radius: 10.5px; flex: none; }
 .title { font-size: var(--fs-xl); font-weight: 700; letter-spacing: -.02em; line-height: 1.2; }
-.subtitle { color: var(--muted); font-size: var(--fs-sm); font-weight: 500; }
+.subtitle { color: var(--label-muted); font-size: var(--fs-sm); font-weight: 500; }
 .btn.wide { width: 100%; }
 .about { margin-top: var(--sp-4); padding-top: var(--sp-3); border-top: 1px solid var(--line); font-size: var(--fs-xs); color: var(--muted); line-height: 1.6; }
 .about b { color: var(--text); }
@@ -171,13 +252,21 @@ body.papering .tabbar { display: none; }
 @keyframes fade { from { opacity: 0; } }
 .sheet {
   width: 100%; max-width: 680px;
-  background: var(--card); color: var(--text);
+  background: var(--glass); color: var(--text);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   border: 1px solid var(--line);
-  box-shadow: var(--shadow-lg);
+  box-shadow: inset 0 1px 0 var(--glass-line-top), var(--shadow-lg);
   padding: 8px 20px calc(var(--sp-5) + env(safe-area-inset-bottom));
   max-height: 88vh; overflow-y: auto;
   animation: slideup .4s var(--spring);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sheet { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .sheet { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 .sheet-grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
 @keyframes slideup { from { transform: translateY(48px); opacity: 0; } }
@@ -309,9 +398,13 @@ body.papering .tabbar { display: none; }
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Ccircle cx='6.5' cy='6.5' r='5' stroke='%238e8e93' stroke-width='1.6' fill='none'/%3E%3Cpath d='M10.3 10.3L14 14' stroke='%238e8e93' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: 12px center;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
 }
 .search::placeholder { color: var(--muted); }
 .search:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .search { backdrop-filter: none; -webkit-backdrop-filter: none; } }
+@supports not (background: color-mix(in srgb, red 50%, transparent)) { .search { backdrop-filter: none; -webkit-backdrop-filter: none; } }
 .select {
   appearance: none;
   -webkit-appearance: none;
@@ -327,34 +420,63 @@ body.papering .tabbar { display: none; }
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23888' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
 }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .select { backdrop-filter: none; -webkit-backdrop-filter: none; } }
+@supports not (background: color-mix(in srgb, red 50%, transparent)) { .select { backdrop-filter: none; -webkit-backdrop-filter: none; } }
 
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3); }
 .stat {
-  background: var(--card);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 0;
   border-radius: var(--radius-sm);
   padding: var(--sp-3) 4px var(--sp-2);
   text-align: center;
 }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .stat { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; } }
+@supports not (background: color-mix(in srgb, red 50%, transparent)) { .stat { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; } }
 .stat b { display: block; font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .stat span { display: block; font-size: var(--fs-xs); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stat .ok { color: var(--green); }
 .stat .bad { color: var(--red); }
 
 .card {
-  background: var(--card);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 0;
   border-radius: var(--radius);
   padding: var(--sp-5);
+  box-shadow: inset 0 1px 0 var(--glass-line-top), inset 0 -1px 0 var(--glass-line-bottom), var(--glass-shadow);
 }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
+}
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .card { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
+}
+/* .card's own padding shorthand above wins the cascade over .qcard's
+   (same specificity, .card is later in source) — restate qcard's bottom
+   padding here so it isn't clobbered back up to --sp-5. Only the Exam
+   screen's qcard (the last child of .screen, with no sibling actionsbar
+   below it) needs the extra tab-bar clearance — its Next button lives
+   inside the card. Practice's qcard is followed by a sibling .actionsbar
+   that already carries --tabbar-clear, so giving qcard its own clearance
+   too would just leave a dead empty band at the bottom of the card. */
+.qcard { padding-bottom: var(--sp-2); }
+.screen > .cardpane:last-child > .qcard { padding-bottom: var(--tabbar-clear); }
 .qwrap { animation: rise .3s cubic-bezier(.2, .7, .3, 1); }
 @keyframes rise {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
 }
 .qmeta { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); font-weight: 600; color: var(--muted); margin-bottom: var(--sp-3); flex-wrap: wrap; }
-.badge { background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 4px var(--sp-3); font-weight: 700; }
+.badge {
+  background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 4px var(--sp-3); font-weight: 700;
+}
 .qtext { font-size: var(--fs-lg); font-weight: 600; letter-spacing: -.01em; line-height: 1.35; margin: 0 0 var(--sp-4); }
 .qimg { width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--line); margin-bottom: var(--sp-4); background: #fff; }
 
@@ -381,7 +503,30 @@ body.papering .tabbar { display: none; }
   cursor: pointer;
   transition: background .12s, box-shadow .12s;
 }
+/* Frost the default (unanswered) option only — .opt.correct / .opt.wrong
+   below reset background/box-shadow so the answer feedback always stays
+   solid and unambiguous, never glass. No backdrop-filter here: .opt renders
+   inside .card.qcard, which already establishes a backdrop root, so a
+   nested blur would sample only the ambient tint the card already applied —
+   a no-op visually but a real compositing cost. The tint + specular edge
+   (box-shadow) still render and are what read as glass. */
+.opt:not(.correct):not(.wrong) {
+  box-shadow: inset 0 1px 0 var(--glass-line-top), inset 0 -1px 0 var(--glass-line-bottom);
+}
 .opt:not(:disabled):active { background: color-mix(in srgb, var(--fill), var(--text) 10%); }
+/* Safari 16.0/16.1 has no color-mix() support and no @supports fallback
+   here previously — the var()-containing color-mix() value is invalid at
+   computed-value time, which resolves to transparent, not "keep the
+   previous background". Restore an opaque press color (a hand-computed
+   equivalent of the color-mix() result composited over --card) so pressing
+   an answer never flashes fully transparent. */
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .opt:not(:disabled):active { background: #e0e0e2; }
+  :root[data-theme="dark"] .opt:not(:disabled):active { background: #3d3d41; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .opt:not(:disabled):active { background: #3d3d41; }
+  }
+}
 .opt:disabled { cursor: default; }
 .opt .letter {
   flex: none;
@@ -501,16 +646,19 @@ body.papering .tabbar { display: none; }
   gap: var(--sp-3);
   padding: var(--sp-3) 14px;
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--card) 80%, transparent);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px);
-  box-shadow: var(--shadow);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 0 var(--glass-line-top), var(--shadow);
   font-size: var(--fs-sm);
   color: var(--muted);
   animation: pop .4s var(--spring);
 }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hint { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: var(--shadow); }
+}
 @supports not (background: color-mix(in srgb, red 50%, transparent)) {
-  .hint { background: var(--card); }
+  .hint { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: var(--shadow); }
 }
 .hint b { color: var(--text); }
 .hint button { margin-left: auto; border: 0; background: none; color: var(--muted); font-size: var(--fs-lg); cursor: pointer; padding: 4px var(--sp-2); }
@@ -646,6 +794,8 @@ body.papering .tabbar { display: none; }
 
 @media (max-width: 420px) {
   .card { padding: var(--sp-4); }
+  .qcard { padding-bottom: var(--sp-2); }
+  .screen > .cardpane:last-child > .qcard { padding-bottom: var(--tabbar-clear); }
   .qtext { font-size: var(--fs-md); }
   .stat b { font-size: var(--fs-lg); }
   .content { padding: calc(var(--sp-1) + env(safe-area-inset-top)) var(--sp-3) 4px; }
@@ -662,6 +812,8 @@ body.papering .tabbar { display: none; }
   .opt .letter { width: 24px; height: 24px; }
   .btn { min-height: 40px; padding: 9px var(--sp-3); }
   .card { padding: var(--sp-3); }
+  .qcard { padding-bottom: var(--sp-2); }
+  .screen > .cardpane:last-child > .qcard { padding-bottom: var(--tabbar-clear); }
   .stats { gap: 6px; }
   .stat { padding: var(--sp-2) 2px; }
   .stat b { font-size: var(--fs-md); }
@@ -669,4 +821,31 @@ body.papering .tabbar { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+/* Liquid Glass accessibility escape hatch: users with vestibular/visual
+   sensitivities can ask the OS to turn translucency off system-wide. Honor
+   it by stripping every backdrop-filter we added AND forcing every one of
+   those 13 selectors to an opaque background — the tinted-fill surfaces
+   (.seg/.search/.select/.landbtn/.opt and .badge/.expl) still carry an
+   rgba(...) tint on their own, which stays translucent once the blur
+   behind them is gone, so they get the --fill-opaque / --accent-soft-opaque
+   solid equivalents instead of their rgba tint. */
+@media (prefers-reduced-transparency: reduce) {
+  .tabbar, .sheet, .card, .stat, .hint,
+  .seg, .search, .select, .landbtn, .badge, .expl,
+  .opt:not(.correct):not(.wrong) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .tabbar, .sheet, .card, .stat, .hint {
+    background: var(--card) !important;
+  }
+  .seg, .search, .select, .landbtn, .opt:not(.correct):not(.wrong) {
+    background: var(--fill-opaque) !important;
+  }
+  .badge, .expl {
+    background: var(--accent-soft-opaque) !important;
+  }
+  .card { box-shadow: none; }
+  .opt:not(.correct):not(.wrong) { box-shadow: none; }
 }
