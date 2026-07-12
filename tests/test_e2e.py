@@ -67,14 +67,6 @@ def test_full_user_flow(server):
         page.wait_for_selector(".verdict", state="detached")
         page.wait_for_selector(".qtext")
 
-        # Voice mode toggles on and off without page errors (no mic in CI —
-        # the state machine must still not crash)
-        if page.locator(".voicebtn").count():
-            page.locator(".voicebtn").click()
-            page.wait_for_timeout(500)
-            page.locator(".voicebtn").click()
-            page.wait_for_selector(".qtext")
-
         # Exam: full run through all 33 questions to the result screen
         page.locator(".tab", has_text="Prüfung").click()
         page.get_by_role("button", name="Prüfung starten").click()

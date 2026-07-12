@@ -1,10 +1,28 @@
-// Bump on every release that changes shell assets (app.js, styles.css, index)
-// — the new SW install is what surfaces the in-app update toast.
-const VERSION = 'v16';
+// VERSION is substituted server-side with a hash of the SHELL assets — the
+// new SW install is what surfaces the in-app update toast.
+const VERSION = '__VERSION__';
 const SHELL = [
   '/',
   '/styles.css',
-  '/app.js',
+  '/js/boot.js',
+  '/js/main.js',
+  '/js/dom.js',
+  '/js/api.js',
+  '/js/store.js',
+  '/js/srs.js',
+  '/js/sfx.js',
+  '/js/readiness.js',
+  '/js/theme.js',
+  '/js/util.js',
+  '/js/i18n.js',
+  '/js/components/QuestionCard.js',
+  '/js/components/Filters.js',
+  '/js/components/Mastery.js',
+  '/js/components/Practice.js',
+  '/js/components/Exam.js',
+  '/js/components/Review.js',
+  '/js/components/Progress.js',
+  '/js/components/ErrorBoundary.js',
   '/vocab.json',
   '/vendor/react.production.min.js',
   '/vendor/react-dom.production.min.js',

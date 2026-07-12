@@ -1,11 +1,15 @@
 import hashlib
 import hmac
+import ipaddress
 import json
+import logging
 import os
+import re
 import secrets
 import threading
 import time
 from collections import defaultdict, deque
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
@@ -14,16 +18,44 @@ from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+if not logging.getLogger().handlers:
+    logging.basicConfig(level=logging.INFO)
+log = logging.getLogger("ebt")
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_FILE = BASE_DIR / "data" / "leben-in-deutschland-pool.json"
 STATS_FILE = Path(os.environ.get("QUIZ_STATS_FILE", BASE_DIR / "data" / "stats.json"))
 STATIC_DIR = BASE_DIR / "static"
 IMG_DIR = STATIC_DIR / "img"
 
-SECRET = os.environ.get("QUIZ_SECRET") or secrets.token_hex(32)
+if os.environ.get("QUIZ_SECRET"):
+    SECRET = os.environ["QUIZ_SECRET"]
+else:
+    SECRET = secrets.token_hex(32)
+    log.warning(
+        "QUIZ_SECRET not set — using a random secret generated at startup; "
+        "every restart will invalidate all live tokens"
+    )
 TOKEN_TTL = 2 * 60 * 60
 RATE_LIMIT = 120
 RATE_WINDOW = 60
+
+# Peers we trust to report a real client IP via X-Forwarded-For. Deliberately
+# defaults to the private/loopback ranges: in production the immediate peer
+# is always Caddy on a private Docker address, so XFF is trusted and we get
+# the real client IP; a direct public connection has a public peer address,
+# so XFF is ignored and we rate-limit the real peer instead. Defaulting to
+# "trust nothing" would bucket ALL production traffic under Caddy's single
+# peer IP and rate-limit the entire site at 120 req/min total — a
+# self-inflicted outage — so that must NOT be done.
+TRUSTED_PROXIES = [
+    ipaddress.ip_network(net.strip(), strict=False)
+    for net in os.environ.get(
+        "TRUSTED_PROXIES",
+        "127.0.0.0/8,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,fc00::/7",
+    ).split(",")
+    if net.strip()
+]
 
 with open(DATA_FILE, encoding="utf-8") as f:
     _raw_pool = json.load(f)
@@ -121,8 +153,11 @@ def _flusher():
         time.sleep(15)
         try:
             STATS.flush()
-        except OSError:
-            pass
+        except Exception:
+            # Broad on purpose: a single bad record (e.g. a TypeError from
+            # json.dumps) must not silently kill this thread — that would
+            # stop all stats persistence for the rest of the process lifetime.
+            log.exception("stats flusher iteration failed")
 
 threading.Thread(target=_flusher, daemon=True).start()
 
@@ -149,6 +184,7 @@ try:
     )
     PUSH_OK = True
 except Exception:  # missing deps or unwritable key path — run without push
+    log.warning("push disabled: VAPID init failed", exc_info=True)
     PUSH_OK = False
     VAPID_PUB = None
 
@@ -213,7 +249,8 @@ def _push_sender():
                     if e.response is not None and e.response.status_code in (400, 404, 410):
                         dead.append(endpoint)
                 except Exception:
-                    pass
+                    # One bad subscription must not abort the whole batch.
+                    log.exception("push send failed for %s", endpoint)
             if dead or sent:
                 with _push_lock:
                     subs = _push_load()
@@ -224,7 +261,8 @@ def _push_sender():
                             subs[ep]["lastSent"] = today
                     _push_save(subs)
         except Exception:
-            pass
+            # Keep the thread alive across a bad iteration.
+            log.exception("push sender loop iteration failed")
 
 if PUSH_OK:
     threading.Thread(target=_push_sender, daemon=True).start()
@@ -248,10 +286,26 @@ _hits: dict[str, deque] = defaultdict(deque)
 _hits_lock = threading.Lock()
 
 def client_ip(request: Request) -> str:
+    peer = request.client.host if request.client else "?"
     fwd = request.headers.get("x-forwarded-for")
     if fwd:
-        return fwd.split(",")[0].strip()
-    return request.client.host if request.client else "?"
+        # Only honor XFF if the immediate peer is itself a trusted proxy —
+        # otherwise a direct attacker fully controls the XFF header and can
+        # rotate it per request to land in a fresh rate-limit bucket every
+        # time, bypassing the limiter completely.
+        try:
+            peer_addr = ipaddress.ip_address(peer)
+        except ValueError:
+            # Unparseable peer (e.g. Starlette TestClient's "testclient")
+            # is treated as untrusted.
+            peer_addr = None
+        if peer_addr is not None and any(peer_addr in net for net in TRUSTED_PROXIES):
+            # The leftmost entry is client-supplied and trivially spoofable —
+            # an attacker can rotate it per request to land in a fresh rate-limit
+            # bucket every time. Caddy *appends* the real peer IP as the last
+            # hop, so the rightmost entry is the one hop we actually trust.
+            return fwd.split(",")[-1].strip()
+    return peer
 
 def rate_limit(request: Request):
     ip = client_ip(request)
@@ -273,7 +327,41 @@ def require_token(request: Request):
         raise HTTPException(403, "Invalid or expired token")
 
 
-app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+# ---- Service worker version -------------------------------------------------
+# The version embedded in sw.js used to be a manually bumped literal
+# (`VERSION = 'v16'`) — forget the bump and clients serve stale JS forever.
+# Instead we hash every asset the SW's SHELL array references at startup, so
+# the cache name changes automatically whenever any shell asset changes.
+SW_FILE = STATIC_DIR / "sw.js"
+_SW_SOURCE = SW_FILE.read_text(encoding="utf-8")
+
+_shell_match = re.search(r"const SHELL = \[(.*?)\];", _SW_SOURCE, re.S)
+SW_SHELL = re.findall(r"'([^']+)'", _shell_match.group(1)) if _shell_match else []
+
+def _sw_shell_path(rel: str) -> Path:
+    return STATIC_DIR / "index.html" if rel == "/" else STATIC_DIR / rel.lstrip("/")
+
+_shell_hash = hashlib.sha256()
+for _rel in SW_SHELL:
+    try:
+        _shell_hash.update(_sw_shell_path(_rel).read_bytes())
+    except OSError:
+        log.error("SW shell asset missing or unreadable, skipping: %s", _rel)
+SW_VERSION = _shell_hash.hexdigest()[:12]
+SW_CONTENT = _SW_SOURCE.replace("__VERSION__", SW_VERSION)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    # Flush any stats accumulated since the last periodic flush so a deploy
+    # restart never loses up to 15s of data. The flusher thread itself is
+    # still started at import time (not here) so TestClient(app), which is
+    # not used as a context manager, keeps working unaffected.
+    STATS.flush()
+
+
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
 @app.middleware("http")
@@ -286,6 +374,28 @@ async def cache_headers(request: Request, call_next):
         else:
             response.headers["Cache-Control"] = "no-cache"
     return response
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; "
+        "base-uri 'none'; form-action 'none'"
+    )
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+    return response
+
+@app.get("/sw.js")
+def get_sw():
+    return Response(
+        content=SW_CONTENT,
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-cache"},
+    )
 
 @app.get("/api/token")
 def get_token(request: Request):

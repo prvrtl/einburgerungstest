@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import re
 import time
 from collections import Counter
 
@@ -158,7 +159,7 @@ def test_push_endpoints():
 def test_static_frontend_served():
     assert client.get("/").status_code == 200
     assert "Einbürgerungstest" in client.get("/").text
-    assert client.get("/app.js").status_code == 200
+    assert client.get("/js/main.js").status_code == 200
     assert client.get("/img/aufgabe_21.png").status_code == 200
 
 
@@ -192,7 +193,8 @@ def test_pwa_assets_served():
     index = client.get("/").text
     assert "manifest.webmanifest" in index
     assert "apple-touch-icon" in index
-    assert "serviceWorker" in index
+    assert "boot.js" in index
+    assert "serviceWorker" in client.get("/js/boot.js").text
 
 
 def test_i18n_content_complete():
@@ -207,7 +209,7 @@ def test_i18n_content_complete():
 
 def test_cache_headers():
     assert client.get("/icons/icon-192.png").headers["cache-control"] == "public, max-age=604800"
-    assert client.get("/app.js").headers["cache-control"] == "no-cache"
+    assert client.get("/js/main.js").headers["cache-control"] == "no-cache"
     cc = client.get("/api/questions", headers=auth()).headers["cache-control"]
     assert "no-cache" in cc and "private" in cc
 
@@ -229,3 +231,86 @@ def test_known_answers_spot_check(qid, expected_correct):
     pool = client.get("/api/questions", headers=auth()).json()
     q = next(q for q in pool if q["id"] == qid)
     assert q["correct"] == expected_correct
+
+
+def test_security_headers_present():
+    for r in (client.get("/"), client.get("/api/stats")):
+        csp = r.headers["content-security-policy"]
+        assert "frame-ancestors 'none'" in csp
+        assert "unsafe-inline" not in csp.split("script-src", 1)[1].split(";", 1)[0]
+        assert r.headers["x-content-type-options"] == "nosniff"
+        assert r.headers["referrer-policy"] == "strict-origin-when-cross-origin"
+        assert r.headers["x-frame-options"] == "DENY"
+        assert r.headers["permissions-policy"] == "geolocation=(), camera=(), microphone=()"
+
+
+def test_sw_js_version_substitution():
+    r = client.get("/sw.js")
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("application/javascript")
+    assert "__VERSION__" not in r.text
+    match = re.search(r"const VERSION = '([0-9a-f]+)'", r.text)
+    assert match and match.group(1)
+
+
+def test_sw_shell_assets_exist_on_disk():
+    assert appmod.SW_SHELL, "SHELL array should not be empty"
+    for rel in appmod.SW_SHELL:
+        path = appmod.STATIC_DIR / "index.html" if rel == "/" else appmod.STATIC_DIR / rel.lstrip("/")
+        assert path.is_file(), f"SHELL asset missing on disk: {rel}"
+
+
+def test_spoofed_xff_ignored_for_untrusted_peer():
+    # TestClient's default peer is the literal "testclient", which is not a
+    # parseable/trusted IP, so XFF must be ignored entirely and every
+    # request buckets under the peer regardless of the (fully
+    # attacker-controlled) X-Forwarded-For value.
+    appmod._hits.clear()
+    try:
+        for i in range(appmod.RATE_LIMIT):
+            r = client.get(
+                "/api/stats",
+                headers={"X-Forwarded-For": f"203.0.113.{i}"},
+            )
+            assert r.status_code == 200
+        r = client.get(
+            "/api/stats",
+            headers={"X-Forwarded-For": "203.0.113.254"},
+        )
+        assert r.status_code == 429
+    finally:
+        appmod._hits.clear()
+
+
+def test_xff_trusted_when_peer_is_trusted_proxy():
+    # A peer within TRUSTED_PROXIES' default private ranges is trusted, so
+    # the rightmost XFF hop is used for bucketing — not the leftmost.
+    trusted_client = TestClient(app, client=("10.1.2.3", 1234))
+    appmod._hits.clear()
+    try:
+        for _ in range(appmod.RATE_LIMIT):
+            r = trusted_client.get(
+                "/api/stats",
+                headers={"X-Forwarded-For": "1.2.3.4, 55.55.55.55"},
+            )
+            assert r.status_code == 200
+        r = trusted_client.get(
+            "/api/stats",
+            headers={"X-Forwarded-For": "1.2.3.4, 55.55.55.55"},
+        )
+        assert r.status_code == 429
+
+        appmod._hits.clear()
+        for i in range(appmod.RATE_LIMIT):
+            r = trusted_client.get(
+                "/api/stats",
+                headers={"X-Forwarded-For": f"9.9.9.{i}, 55.55.55.55"},
+            )
+            assert r.status_code == 200
+        r = trusted_client.get(
+            "/api/stats",
+            headers={"X-Forwarded-For": "9.9.9.254, 55.55.55.55"},
+        )
+        assert r.status_code == 429
+    finally:
+        appmod._hits.clear()
