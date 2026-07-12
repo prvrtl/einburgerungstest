@@ -151,10 +151,12 @@ function App() {
       ${settingsOpen && html`
         <div class="sheet-backdrop" onClick=${() => setSettingsOpen(false)}>
           <div class="sheet" role="dialog" aria-label=${t.settings} onClick=${(e) => e.stopPropagation()}>
+            <div class="sheet-grabber"></div>
             <div class="sheet-head">
               <b>${t.settings}</b>
               <button class="sheet-close" onClick=${() => setSettingsOpen(false)} aria-label="Close">✕</button>
             </div>
+            <div class="list">
             <div class="setting-row">
               <span>${t.language}</span>
               <div class="seg">
@@ -206,6 +208,7 @@ function App() {
                 </label>
               </div>
             </div>
+            </div>
             <div class="about">
               <b>Einbürgerungstest Trainer</b> — ${t.subtitle}
               <p>
@@ -249,6 +252,7 @@ function App() {
       ${!landChosen && html`
         <div class="sheet-backdrop">
           <div class="sheet" role="dialog" aria-label=${t.chooseLand}>
+            <div class="sheet-grabber"></div>
             <div class="sheet-head"><b>${t.chooseLand}</b></div>
             <p class="sheet-note">${t.chooseLandNote}</p>
             <div class="land-list">
@@ -273,6 +277,7 @@ function App() {
       ${statsOpen && community && html`
         <div class="sheet-backdrop" onClick=${() => setStatsOpen(false)}>
           <div class="sheet" role="dialog" aria-label=${t.statsTitle} onClick=${(e) => e.stopPropagation()}>
+            <div class="sheet-grabber"></div>
             <div class="sheet-head">
               <b>${t.statsTitle}</b>
               <button class="sheet-close" onClick=${() => setStatsOpen(false)} aria-label="Close">✕</button>

@@ -1,4 +1,4 @@
-export const THEME_COLORS = { light: '#e9f5f7', dark: '#06171d' };
+export const THEME_COLORS = { light: '#f2f2f7', dark: '#000000' };
 
 export function applyTheme(theme) {
   const root = document.documentElement;
