@@ -157,8 +157,8 @@ def test_push_endpoints():
 
 
 def test_static_frontend_served():
-    assert client.get("/").status_code == 200
-    assert "Einbürgerungstest" in client.get("/").text
+    assert client.get("/app").status_code == 200
+    assert "Einbürgerungstest" in client.get("/app").text
     assert client.get("/js/main.js").status_code == 200
     assert client.get("/img/aufgabe_21.png").status_code == 200
 
@@ -173,6 +173,69 @@ def test_seo_assets():
     index = client.get("/").text
     assert 'property="og:title"' in index
     assert 'rel="canonical"' in index
+
+
+def test_root_landing_de():
+    r = client.get("/")
+    assert r.status_code == 200
+    body = r.text
+    assert 'lang="de"' in body
+    assert "<h1" in body
+    assert '<link rel="canonical" href="https://einburgerungstest.sarmatt.online/">' in body
+    assert 'hreflang="de"' in body and 'hreflang="en"' in body and 'hreflang="uk"' in body
+    assert 'hreflang="x-default"' in body
+    assert 'property="og:title"' in body and 'property="og:image"' in body
+    assert 'application/ld+json' in body
+
+
+def test_en_landing():
+    r = client.get("/en")
+    assert r.status_code == 200
+    body = r.text
+    assert 'lang="en"' in body
+    assert '<link rel="canonical" href="https://einburgerungstest.sarmatt.online/en">' in body
+    assert 'hreflang="de"' in body and 'hreflang="en"' in body and 'hreflang="uk"' in body
+    assert 'hreflang="x-default"' in body
+
+
+def test_uk_landing():
+    r = client.get("/uk")
+    assert r.status_code == 200
+    body = r.text
+    assert 'lang="uk"' in body
+    assert '<link rel="canonical" href="https://einburgerungstest.sarmatt.online/uk">' in body
+    assert 'hreflang="de"' in body and 'hreflang="en"' in body and 'hreflang="uk"' in body
+    assert 'hreflang="x-default"' in body
+
+
+def test_app_shell_route():
+    r = client.get("/app")
+    assert r.status_code == 200
+    body = r.text
+    assert "/js/main.js" in body
+    assert 'name="robots" content="noindex, follow"' in body
+
+
+def test_sitemap_lists_all_urls():
+    body = client.get("/sitemap.xml").text
+    assert body.startswith("<?xml")
+    for loc in (
+        "https://einburgerungstest.sarmatt.online/</loc>",
+        "https://einburgerungstest.sarmatt.online/en</loc>",
+        "https://einburgerungstest.sarmatt.online/uk</loc>",
+    ):
+        assert loc in body
+    # /app is noindex, so listing it in the sitemap would be self-contradictory.
+    assert "https://einburgerungstest.sarmatt.online/app</loc>" not in body
+
+
+def test_json_ld_hashes_present_in_csp():
+    csp = client.get("/").headers["content-security-policy"]
+    script_src = csp.split("script-src", 1)[1].split(";", 1)[0]
+    assert "'sha256-" in script_src
+    assert appmod._JSON_LD_HASHES, "expected at least one JSON-LD block to be hashed"
+    for h in appmod._JSON_LD_HASHES:
+        assert h in script_src
 
 
 def test_vocab_served():
@@ -190,7 +253,7 @@ def test_pwa_assets_served():
     assert client.get("/sw.js").status_code == 200
     for icon in ("icon-192.png", "icon-512.png", "apple-touch-icon.png"):
         assert client.get(f"/icons/{icon}").status_code == 200
-    index = client.get("/").text
+    index = client.get("/app").text
     assert "manifest.webmanifest" in index
     assert "apple-touch-icon" in index
     assert "boot.js" in index
@@ -255,8 +318,15 @@ def test_sw_js_version_substitution():
 
 def test_sw_shell_assets_exist_on_disk():
     assert appmod.SW_SHELL, "SHELL array should not be empty"
+    assert "/app" in appmod.SW_SHELL
+    # Landing pages are precached too, so an installed PWA that navigates to
+    # "/" offline (before it's ever cached "/" via a live network response)
+    # still gets a real document instead of a network-error page.
+    assert "/" in appmod.SW_SHELL
+    assert "/en" in appmod.SW_SHELL
+    assert "/uk" in appmod.SW_SHELL
     for rel in appmod.SW_SHELL:
-        path = appmod.STATIC_DIR / "index.html" if rel == "/" else appmod.STATIC_DIR / rel.lstrip("/")
+        path = appmod._sw_shell_path(rel)
         assert path.is_file(), f"SHELL asset missing on disk: {rel}"
 
 

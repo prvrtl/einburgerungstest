@@ -1,35 +1,291 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Einbürgerungstest Trainer</title>
-  <meta name="description" content="Practice quiz for the German Leben in Deutschland / Einbürgerungstest — all 16 federal states, exam simulation, translations and explanations.">
+  <title>Einbürgerungstest Trainer — Kostenlos für den Leben-in-Deutschland-Test üben</title>
+  <meta name="description" content="Kostenloser Übungsquiz für den Einbürgerungstest / Leben in Deutschland: alle 460 offiziellen Fragen, alle 16 Bundesländer, Prüfungssimulation, Papiermodus, Offline-PWA. Ohne Werbung, ohne Tracking.">
   <link rel="canonical" href="https://einburgerungstest.sarmatt.online/">
+  <link rel="alternate" hreflang="de" href="https://einburgerungstest.sarmatt.online/">
+  <link rel="alternate" hreflang="en" href="https://einburgerungstest.sarmatt.online/en">
+  <link rel="alternate" hreflang="uk" href="https://einburgerungstest.sarmatt.online/uk">
+  <link rel="alternate" hreflang="x-default" href="https://einburgerungstest.sarmatt.online/">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Einbürgerungstest Trainer">
-  <meta property="og:description" content="Free practice quiz for the German citizenship test — all 460 official questions, all 16 federal states, realistic exam simulation, EN/UK translations.">
+  <meta property="og:site_name" content="Einbürgerungstest Trainer">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:title" content="Einbürgerungstest Trainer — Kostenlos üben">
+  <meta property="og:description" content="Alle 460 offiziellen Fragen, alle 16 Bundesländer, Prüfungssimulation und Papiermodus. Kostenlos, ohne Tracking.">
   <meta property="og:url" content="https://einburgerungstest.sarmatt.online/">
-  <meta property="og:image" content="https://einburgerungstest.sarmatt.online/icons/icon-512.png">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://einburgerungstest.sarmatt.online/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://einburgerungstest.sarmatt.online/og.png">
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Einbürgerung">
-  <script src="/js/boot.js"></script>
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/landing.css">
+  <script src="/js/landing.js"></script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Einbürgerungstest Trainer",
+  "url": "https://einburgerungstest.sarmatt.online/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any (Web/PWA)",
+  "inLanguage": "de",
+  "description": "Kostenloser Übungsquiz für den Einbürgerungstest / Leben in Deutschland: alle 460 offiziellen Fragen, alle 16 Bundesländer, Prüfungssimulation, Papiermodus, Offline-PWA.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "isAccessibleForFree": true
+}
+  </script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Ist der Einbürgerungstest Trainer kostenlos?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja, die App ist komplett kostenlos und Open Source. Kein Konto, keine Werbung, kein Tracking." }
+    },
+    {
+      "@type": "Question",
+      "name": "Sind das die echten Prüfungsfragen?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja, alle 460 offiziellen Fragen aus dem Fragenkatalog des BAMF sind enthalten — die 300 allgemeinen Fragen plus die 10 Fragen zu jedem der 16 Bundesländer." }
+    },
+    {
+      "@type": "Question",
+      "name": "Wie viele Fragen muss ich für den Einbürgerungstest richtig beantworten?",
+      "acceptedAnswer": { "@type": "Answer", "text": "In der echten Prüfung werden dir 33 Fragen gestellt (30 allgemeine + 3 zu deinem Bundesland). Bestanden hast du ab 17 richtigen Antworten, in maximal 60 Minuten." }
+    },
+    {
+      "@type": "Question",
+      "name": "Funktioniert die App auch offline?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja. Die App lässt sich als Progressive Web App installieren und funktioniert danach auch ohne Internetverbindung." }
+    },
+    {
+      "@type": "Question",
+      "name": "Gibt es die App auch auf Englisch oder Ukrainisch?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja, in der App gibt es einen eingebauten Sprachumschalter für Fragen und Erklärungen auf Deutsch, Englisch und Ukrainisch. /en und /uk sind lediglich diese Startseite in den jeweiligen Sprachen, keine übersetzten Fragenkataloge." }
+    },
+    {
+      "@type": "Question",
+      "name": "Ist diese Seite offiziell vom BAMF?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nein. Dies ist ein unabhängiges, privates Übungsprojekt ohne Verbindung zum Bundesamt für Migration und Flüchtlinge oder einer anderen Behörde." }
+    }
+  ]
+}
+  </script>
 </head>
 <body>
-  <div id="root">
-    <div class="boot">Loading questions&hellip;</div>
-  </div>
-  <script src="/vendor/react.production.min.js"></script>
-  <script src="/vendor/react-dom.production.min.js"></script>
-  <script src="/vendor/htm.min.js"></script>
-  <script type="module" src="/js/main.js"></script>
+  <header class="l-nav">
+    <div class="wrap l-navrow">
+      <a class="l-brand" href="/">
+        <img src="/icons/icon-192.png" width="28" height="28" alt="">
+        Einbürgerungstest Trainer
+      </a>
+      <nav class="l-langs" aria-label="Sprache">
+        <a href="/" aria-current="page">DE</a>
+        <a href="/en">EN</a>
+        <a href="/uk">UK</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="l-hero wrap">
+      <div class="l-hero-copy">
+        <span class="l-eyebrow">Leben in Deutschland · Einbürgerungstest</span>
+        <h1>Bestehe den Einbürgerungstest beim ersten Versuch</h1>
+        <p class="l-sub">
+          Übe mit allen 460 offiziellen Fragen des BAMF-Fragenkatalogs — alle 16 Bundesländer,
+          realistische Prüfungssimulation und sofortige Erklärungen. Kostenlos, ohne Werbung,
+          ohne Tracking.
+        </p>
+        <div class="l-cta-row">
+          <a class="l-btn" href="/app">Jetzt üben →</a>
+          <a class="l-btn ghost" href="#wie-es-funktioniert">So funktioniert's</a>
+        </div>
+        <div class="l-hero-stats">
+          <div class="l-stat"><b>460</b><span>Offizielle Fragen</span></div>
+          <div class="l-stat"><b>16</b><span>Bundesländer</span></div>
+          <div class="l-stat"><b>17/33</b><span>zum Bestehen</span></div>
+          <div class="l-stat"><b>60 min</b><span>Prüfungszeit</span></div>
+        </div>
+      </div>
+      <div class="l-hero-visual">
+        <div class="l-phone">
+          <picture>
+            <source srcset="/img/landing-mockup-dark.png" media="(prefers-color-scheme: dark)">
+            <img src="/img/landing-mockup-light.png" width="390" height="706" alt="Screenshot der App: beantwortete Übungsfrage mit Erklärung" loading="eager">
+          </picture>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-section wrap" aria-labelledby="was-ist">
+      <h2 id="was-ist">Was ist der Einbürgerungstest?</h2>
+      <p class="l-lede">
+        Der Einbürgerungstest (offiziell „Leben in Deutschland"-Test) prüft Kenntnisse über
+        Rechtsordnung, Gesellschaft und das Bundesland, in dem du lebst. Er ist Voraussetzung
+        für die Einbürgerung und wird vom Bundesamt für Migration und Flüchtlinge (BAMF)
+        durchgeführt.
+      </p>
+      <div class="l-card">
+        <p style="margin:0 0 12px">
+          In der echten Prüfung bekommst du <b>33 Fragen</b>: 30 allgemeine Fragen, die für
+          ganz Deutschland gelten, plus 3 Fragen speziell zu deinem Bundesland. Du hast
+          <b>60 Minuten</b> Zeit und musst mindestens <b>17 von 33</b> Fragen richtig
+          beantworten, um zu bestehen.
+        </p>
+        <p style="margin:0">
+          Diese App enthält den kompletten offiziellen Fragenkatalog — alle 300 allgemeinen
+          Fragen und die jeweils 10 länderspezifischen Fragen für alle 16 Bundesländer.
+        </p>
+      </div>
+    </section>
+
+    <section class="l-section wrap" aria-labelledby="features">
+      <h2 id="features">Alles, was du zum Üben brauchst</h2>
+      <p class="l-lede">Durchdacht für echtes Lernen, nicht nur Klicken.</p>
+      <div class="l-grid">
+        <div class="l-card l-feature">
+          <div class="l-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h13"/><path d="M8 7h9M8 11h9"/></svg></div>
+          <h3>Kompletter Fragenkatalog</h3>
+          <p>Alle 460 offiziellen Fragen — 300 allgemeine plus 10 je Bundesland, für alle 16 Bundesländer.</p>
+        </div>
+        <div class="l-card l-feature">
+          <div class="l-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
+          <h3>Spaced Repetition</h3>
+          <p>Die App merkt sich, welche Fragen dir schwerfallen, und wiederholt genau die.</p>
+        </div>
+        <div class="l-card l-feature">
+          <div class="l-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+          <h3>Prüfungssimulation</h3>
+          <p>33 Fragen, 60 Minuten, echte Prüfungsbedingungen — inklusive Auswertung.</p>
+        </div>
+        <div class="l-card l-feature">
+          <div class="l-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 13h6M9 17h6M9 9h2"/></svg></div>
+          <h3>Papiermodus</h3>
+          <p>Simuliert den echten BAMF-Antwortbogen zum Ankreuzen, so wie in der Prüfung.</p>
+        </div>
+        <div class="l-card l-feature">
+          <div class="l-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg></div>
+          <h3>Bereitschafts-Einschätzung</h3>
+          <p>Sieh auf einen Blick, wie gut du vorbereitet bist, bevor du den echten Test machst.</p>
+        </div>
+        <div class="l-card l-feature">
+          <div class="l-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l20 20"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M5 12.5a10 10 0 0 1 4-2.4M19 12.5a10 10 0 0 0-3.2-2.1"/><path d="M1.5 8.5a15 15 0 0 1 4-2.6M18.5 5.9A15 15 0 0 1 22.5 8.5"/><path d="M12 20h.01"/></svg></div>
+          <h3>Offline nutzbar</h3>
+          <p>Als Progressive Web App installierbar — funktioniert danach auch ohne Internet.</p>
+        </div>
+        <div class="l-card l-feature">
+          <div class="l-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+          <h3>Deutsch, English, Українська</h3>
+          <p>Fragen und Erklärungen auf Deutsch, Englisch und Ukrainisch verfügbar.</p>
+        </div>
+        <div class="l-card l-feature">
+          <div class="l-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg></div>
+          <h3>Kostenlos &amp; Open Source</h3>
+          <p>Kein Konto, keine Werbung, kein Tracking. Der Quellcode ist frei einsehbar.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-section wrap" id="wie-es-funktioniert" aria-labelledby="wie-h2">
+      <h2 id="wie-h2">So funktioniert's</h2>
+      <div class="l-card l-steps">
+        <div class="l-step">
+          <span class="l-num" aria-hidden="true">1</span>
+          <div><h3>Bundesland wählen</h3><p>Damit du auch die 3 länderspezifischen Fragen übst.</p></div>
+        </div>
+        <div class="l-step">
+          <span class="l-num" aria-hidden="true">2</span>
+          <div><h3>Üben mit Erklärungen</h3><p>Jede Antwort bekommt sofort eine verständliche Begründung.</p></div>
+        </div>
+        <div class="l-step">
+          <span class="l-num" aria-hidden="true">3</span>
+          <div><h3>Prüfung simulieren</h3><p>33 Fragen unter echten Zeitbedingungen, im Papier- oder Digitalmodus.</p></div>
+        </div>
+        <div class="l-step">
+          <span class="l-num" aria-hidden="true">4</span>
+          <div><h3>Bereit für den echten Test</h3><p>Die Bereitschafts-Einschätzung zeigt dir, wann du startklar bist.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-section wrap" id="faq" aria-labelledby="faq-h2">
+      <h2 id="faq-h2">Häufige Fragen</h2>
+      <div class="l-faq">
+        <details>
+          <summary>Ist der Einbürgerungstest Trainer kostenlos?</summary>
+          <p>Ja, die App ist komplett kostenlos und Open Source. Kein Konto, keine Werbung, kein Tracking.</p>
+        </details>
+        <details>
+          <summary>Sind das die echten Prüfungsfragen?</summary>
+          <p>Ja, alle 460 offiziellen Fragen aus dem Fragenkatalog des BAMF sind enthalten — die 300 allgemeinen Fragen plus die 10 Fragen zu jedem der 16 Bundesländer.</p>
+        </details>
+        <details>
+          <summary>Wie viele Fragen muss ich richtig beantworten?</summary>
+          <p>In der echten Prüfung werden dir 33 Fragen gestellt (30 allgemeine + 3 zu deinem Bundesland). Bestanden hast du ab 17 richtigen Antworten, in maximal 60 Minuten.</p>
+        </details>
+        <details>
+          <summary>Funktioniert die App auch offline?</summary>
+          <p>Ja. Die App lässt sich als Progressive Web App installieren und funktioniert danach auch ohne Internetverbindung.</p>
+        </details>
+        <details>
+          <summary>Gibt es die App auch auf Englisch oder Ukrainisch?</summary>
+          <p>Ja, in der <a href="/app">App</a> gibt es einen eingebauten Sprachumschalter für Fragen und Erklärungen auf Deutsch, Englisch und Ukrainisch. <a href="/en">/en</a> und <a href="/uk">/uk</a> sind lediglich diese Startseite in den jeweiligen Sprachen, keine übersetzten Fragenkataloge.</p>
+        </details>
+        <details>
+          <summary>Ist diese Seite offiziell vom BAMF?</summary>
+          <p>Nein. Dies ist ein unabhängiges, privates Übungsprojekt ohne Verbindung zum Bundesamt für Migration und Flüchtlinge oder einer anderen Behörde.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="l-section wrap" id="unterstuetzen" aria-labelledby="support-h2">
+      <h2 id="support-h2">Unterstützen</h2>
+      <p class="l-lede">
+        Diese App ist kostenlos und werbefrei. Wenn du helfen möchtest, denk an die Ukraine.
+      </p>
+      <div class="l-donate">
+        <div class="l-card l-donate-card">
+          <span aria-hidden="true" style="font-size:40px">🇺🇦</span>
+          <h3>United24</h3>
+          <p>Die offizielle Spendenplattform der Regierung der Ukraine — humanitäre Hilfe, Wiederaufbau und Verteidigung.</p>
+          <a class="l-btn" href="https://u24.gov.ua/" target="_blank" rel="noopener">Spenden auf u24.gov.ua</a>
+        </div>
+        <div class="l-card l-donate-card">
+          <img src="/icons/sternenko-fund.png" width="40" height="40" alt="">
+          <h3>Sternenko Fund</h3>
+          <p>Unterstützt ukrainische Streitkräfte mit Ausrüstung und Drohnen.</p>
+          <a class="l-btn" href="https://sternenkofund.org/en/donate" target="_blank" rel="noopener">Spenden auf sternenkofund.org</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-final wrap">
+      <h2>Bereit anzufangen?</h2>
+      <a class="l-btn" href="/app">Jetzt kostenlos üben →</a>
+    </section>
+  </main>
+
+  <footer class="l-footer wrap">
+    <nav aria-label="Footer">
+      <a href="/app">Zur App</a>
+      <a href="https://github.com/prvrtl/einburgerungstest" target="_blank" rel="noopener">Projekt auf GitHub</a>
+      <a href="/en">English</a>
+      <a href="/uk">Українська</a>
+    </nav>
+    <p class="l-disclaimer">
+      Diese Seite ist ein unabhängiges, kostenloses Übungsprojekt und steht in keiner
+      Verbindung zum Bundesamt für Migration und Flüchtlinge (BAMF) oder einer anderen
+      Behörde. Alle Fragen stammen aus dem öffentlich zugänglichen Fragenkatalog des BAMF.
+    </p>
+  </footer>
 </body>
 </html>

@@ -46,7 +46,7 @@ def test_full_user_flow(server):
         page.add_init_script("localStorage.setItem('lang', 'de')")
 
         # First launch: the Bundesland prompt appears; pick Berlin
-        page.goto(BASE_URL)
+        page.goto(BASE_URL + "/app")
         page.get_by_role("button", name="Berlin", exact=True).click()
 
         # Practice: question renders, answering shows verdict + explanation

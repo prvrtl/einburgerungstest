@@ -86,7 +86,7 @@ def test_layout_audit(server):
                 "localStorage.setItem('examHistory', JSON.stringify([{d:1,s:20,n:33}]));"
             )
             where = f"{w}x{h}"
-            page.goto(BASE_URL)
+            page.goto(BASE_URL + "/app")
             page.wait_for_selector(".qtext")
 
             # tab bar itself

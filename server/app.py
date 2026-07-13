@@ -12,9 +12,11 @@ from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import base64
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import Response
+from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -27,6 +29,7 @@ DATA_FILE = BASE_DIR / "data" / "leben-in-deutschland-pool.json"
 STATS_FILE = Path(os.environ.get("QUIZ_STATS_FILE", BASE_DIR / "data" / "stats.json"))
 STATIC_DIR = BASE_DIR / "static"
 IMG_DIR = STATIC_DIR / "img"
+SITE_URL = "https://einburgerungstest.sarmatt.online"
 
 if os.environ.get("QUIZ_SECRET"):
     SECRET = os.environ["QUIZ_SECRET"]
@@ -339,7 +342,15 @@ _shell_match = re.search(r"const SHELL = \[(.*?)\];", _SW_SOURCE, re.S)
 SW_SHELL = re.findall(r"'([^']+)'", _shell_match.group(1)) if _shell_match else []
 
 def _sw_shell_path(rel: str) -> Path:
-    return STATIC_DIR / "index.html" if rel == "/" else STATIC_DIR / rel.lstrip("/")
+    if rel == "/app":
+        return STATIC_DIR / "app.html"
+    if rel == "/":
+        return STATIC_DIR / "index.html"
+    if rel == "/en":
+        return STATIC_DIR / "en.html"
+    if rel == "/uk":
+        return STATIC_DIR / "uk.html"
+    return STATIC_DIR / rel.lstrip("/")
 
 _shell_hash = hashlib.sha256()
 for _rel in SW_SHELL:
@@ -349,6 +360,100 @@ for _rel in SW_SHELL:
         log.error("SW shell asset missing or unreadable, skipping: %s", _rel)
 SW_VERSION = _shell_hash.hexdigest()[:12]
 SW_CONTENT = _SW_SOURCE.replace("__VERSION__", SW_VERSION)
+
+
+# ---- Landing pages + CSP script-src hashes for their inline JSON-LD --------
+# The landing pages carry structured data as inline <script type="application/
+# ld+json"> blocks. `script-src 'self'` alone won't reliably allow inline
+# script across browsers, so instead of weakening the policy with
+# 'unsafe-inline' we hash each block at startup and add it as a 'sha256-…'
+# source — same read-at-import pattern as the SW hasher above.
+LANDING_PAGES = {
+    "/": STATIC_DIR / "index.html",
+    "/en": STATIC_DIR / "en.html",
+    "/uk": STATIC_DIR / "uk.html",
+}
+APP_SHELL_PAGE = STATIC_DIR / "app.html"
+
+_LD_JSON_RE = re.compile(
+    r'<script type="application/ld\+json">(.*?)</script>', re.S
+)
+
+def _inline_script_hashes(html: str) -> set[str]:
+    hashes = set()
+    for match in _LD_JSON_RE.finditer(html):
+        digest = hashlib.sha256(match.group(1).encode("utf-8")).digest()
+        hashes.add(f"'sha256-{base64.b64encode(digest).decode()}'")
+    return hashes
+
+_LANDING_HTML = {path: p.read_text(encoding="utf-8") for path, p in LANDING_PAGES.items()}
+_APP_HTML = APP_SHELL_PAGE.read_text(encoding="utf-8")
+
+_JSON_LD_HASHES = set()
+for _html in _LANDING_HTML.values():
+    _JSON_LD_HASHES |= _inline_script_hashes(_html)
+
+CSP_SCRIPT_SRC = " ".join(["'self'", *sorted(_JSON_LD_HASHES)])
+
+# ---- ETag revalidation for the HTML shell routes ----------------------------
+# These used to be served by StaticFiles, which gives ETag + 304 for free.
+# The HTMLResponse routes below don't, so every PWA launch re-downloaded the
+# full app.html body. Compute the ETag once at import (same read-at-import
+# pattern as POOL_ETAG / SW_VERSION above) and honour If-None-Match.
+def _html_etag(html: str) -> str:
+    return f'"{hashlib.sha256(html.encode("utf-8")).hexdigest()[:16]}"'
+
+_LANDING_ETAGS = {path: _html_etag(html) for path, html in _LANDING_HTML.items()}
+_APP_ETAG = _html_etag(_APP_HTML)
+
+def _html_or_304(request: Request, html: str, etag: str) -> Response:
+    headers = {"ETag": etag}
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers=headers)
+    return HTMLResponse(html, headers=headers)
+
+ROBOTS_TXT = (
+    "User-agent: *\n"
+    "Allow: /\n"
+    "Disallow: /api/\n"
+    f"\nSitemap: {SITE_URL}/sitemap.xml\n"
+)
+
+_SITEMAP_LANGS = [("/", "de"), ("/en", "en"), ("/uk", "uk")]
+
+def _sitemap_alternates(indent: str) -> str:
+    links = [
+        f'{indent}<xhtml:link rel="alternate" hreflang="{lang}" href="{SITE_URL}{path}"/>'
+        for path, lang in _SITEMAP_LANGS
+    ]
+    links.append(f'{indent}<xhtml:link rel="alternate" hreflang="x-default" href="{SITE_URL}/"/>')
+    return "\n".join(links)
+
+def _build_sitemap() -> str:
+    # /app is deliberately not listed here: it carries <meta name="robots"
+    # content="noindex, follow"> (see app.html), and a sitemap entry for a
+    # noindex URL is self-contradictory and gets flagged by Search Console.
+    # robots.txt already allows crawling it and the landing pages link to
+    # it, so it's still discoverable.
+    entries = []
+    for path, _lang in _SITEMAP_LANGS:
+        entries.append(
+            "  <url>\n"
+            f"    <loc>{SITE_URL}{path}</loc>\n"
+            f"{_sitemap_alternates('    ')}\n"
+            "    <changefreq>monthly</changefreq>\n"
+            "  </url>"
+        )
+    body = "\n".join(entries)
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+        'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
+        f"{body}\n"
+        "</urlset>\n"
+    )
+
+SITEMAP_XML = _build_sitemap()
 
 
 @asynccontextmanager
@@ -379,7 +484,7 @@ async def cache_headers(request: Request, call_next):
 async def security_headers(request: Request, call_next):
     response = await call_next(request)
     response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+        f"default-src 'self'; script-src {CSP_SCRIPT_SRC}; style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; "
         "base-uri 'none'; form-action 'none'"
     )
@@ -473,5 +578,42 @@ def push_unsubscribe(body: PushUnsubIn, request: Request):
 @app.get("/healthz")
 def healthz():
     return {"ok": True, "questions": len(POOL)}
+
+
+# ---- Landing pages + SEO routes ---------------------------------------------
+# Registered before the StaticFiles mount below so they take precedence over
+# it — the mount is a catch-all and would otherwise just serve these same
+# files anyway, but the explicit routes let us control caching per-page and
+# guarantee /robots.txt and /sitemap.xml are generated (not stale static
+# files that could drift from the routes they describe).
+@app.get("/", response_class=HTMLResponse)
+def landing_de(request: Request):
+    return _html_or_304(request, _LANDING_HTML["/"], _LANDING_ETAGS["/"])
+
+@app.get("/en", response_class=HTMLResponse)
+def landing_en(request: Request):
+    return _html_or_304(request, _LANDING_HTML["/en"], _LANDING_ETAGS["/en"])
+
+@app.get("/uk", response_class=HTMLResponse)
+def landing_uk(request: Request):
+    return _html_or_304(request, _LANDING_HTML["/uk"], _LANDING_ETAGS["/uk"])
+
+# Registered for both "/app" and "/app/" — the Mount("/") catch-all below
+# would otherwise match the trailing-slash form before Starlette's
+# redirect_slashes can act, and StaticFiles would 404 looking for
+# static/app/index.html.
+@app.get("/app", response_class=HTMLResponse)
+@app.get("/app/", response_class=HTMLResponse, include_in_schema=False)
+def app_shell(request: Request):
+    return _html_or_304(request, _APP_HTML, _APP_ETAG)
+
+@app.get("/robots.txt")
+def robots_txt():
+    return Response(content=ROBOTS_TXT, media_type="text/plain")
+
+@app.get("/sitemap.xml")
+def sitemap_xml():
+    return Response(content=SITEMAP_XML, media_type="application/xml")
+
 
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")

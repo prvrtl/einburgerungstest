@@ -2,7 +2,7 @@
   "name": "Einbürgerungstest Trainer",
   "short_name": "Einbürgerung",
   "description": "Practice quiz for the German Leben in Deutschland / Einbürgerungstest",
-  "start_url": "/",
+  "start_url": "/app",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
