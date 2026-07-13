@@ -219,7 +219,10 @@ a { color: inherit; }
 .l-stat span { display: block; font-size: var(--fs-sm); color: var(--label-muted); font-weight: 500; }
 
 /* ---- hero device mockup ------------------------------------------------- */
-.l-hero-visual { display: flex; justify-content: center; position: relative; }
+/* align-items:center, NOT the flex default of stretch: stretch gave .l-phone a
+   definite height equal to the hero row, which overrode the screenshot's aspect
+   ratio and visibly squashed the UI inside the bezel. */
+.l-hero-visual { display: flex; justify-content: center; align-items: center; position: relative; }
 .l-hero-visual::before {
   content: "";
   position: absolute;
@@ -257,6 +260,13 @@ a { color: inherit; }
 .l-phone picture, .l-phone img {
   display: block; width: 100%; border-radius: 28px;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+  /* The mockups are verbatim 390x844@2x captures of the app viewport. Pin the
+     aspect ratio to the real thing: height:auto alone still renders whatever
+     ratio the file happens to have, so a badly-resized export would silently
+     distort the UI inside the bezel again. */
+  height: auto;
+  aspect-ratio: 390 / 844;
+  object-fit: contain;
 }
 
 /* ---- sections / glass cards -------------------------------------------- */
